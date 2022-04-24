@@ -1,0 +1,20 @@
+on: [push]
+name: Tests
+jobs:
+    setup-and-tests:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            -   name: Composer install
+                run: composer install --no-interaction --no-progress
+
+            -   name: Run Code Standards
+                run: vendor/bin/phpcs
+
+            -   name: Run Tests
+<<<<<<< Updated upstream
+                run: vendor/bin/phpunit
+=======
+                run: vendor/bin/phpunit tests
+>>>>>>> Stashed changes

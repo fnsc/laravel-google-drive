@@ -1,0 +1,7 @@
+.env
+.env.backup
+.phpcs-cache
+.phpunit.result.cache
+/.idea
+/.vscode
+/vendor

@@ -1,0 +1,13 @@
+grumphp:
+    git_hook_variables:
+        EXEC_GRUMPHP_COMMAND: 'docker-compose run --rm -e COLUMNS=$COLUMNS -e LINES=$LINES -e TERM=$TERM -T php'
+    stop_on_failure: true
+    ignore_unstaged_changes: true
+    fixer:
+        enabled: true
+        fix_by_default: true
+    tasks:
+        phpcs: null
+        phpstan:
+            level: 8
+
