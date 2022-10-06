@@ -6,12 +6,14 @@
     <arg name="cache" value=".phpcs-cache"/>
     <arg name="colors"/>
 
-    <!-- Ignore warnings and show progress of the run -->
     <arg value="nps"/>
 
-    <!-- Folders that will be tracked -->
     <file>./src</file>
     <file>./tests</file>
 
     <rule ref="LeroyMerlin"/>
+
+     <rule ref="SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter">
+        <exclude-pattern>tests/TestCase.php</exclude-pattern>
+    </rule>
 </ruleset>
