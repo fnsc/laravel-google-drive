@@ -15,8 +15,5 @@ jobs:
       - name: Run Code Standards
         run: docker-compose run --rm -T php vendor/bin/phpcs
 
-      - name: Run Unit Tests
-        run: docker-compose run --rm -T php vendor/bin/phpunit tests/Unit
-
-      - name: Run Feature Tests
-        run: docker-compose run --rm -T php vendor/bin/phpunit tests/Feature
+      - name: Run Tests
+        run: docker-compose run --rm -T php vendor/bin/phpunit tests/
