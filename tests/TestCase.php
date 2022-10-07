@@ -2,14 +2,14 @@
 
 namespace Tests;
 
-use LaravelGoogleDrive\Infra\GoogleDriveServiceProvider;
+use LaravelGoogleDrive\Infra\Providers\LaravelGoogleDriveServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
     protected function getPackageProviders(mixed $app): array
     {
-        return [GoogleDriveServiceProvider::class];
+        return [LaravelGoogleDriveServiceProvider::class];
     }
 
     protected function instance(mixed $abstract, mixed $instance): object
