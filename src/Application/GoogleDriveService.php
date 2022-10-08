@@ -21,6 +21,7 @@ class GoogleDriveService
         try {
             return $this->googleDrive->upload($file);
         } catch (Exception $exception) {
+            dd($exception->getMessage());
             $this->logger->warning(
                 '[LaravelGoogleDrive|Upload] Something went wrong while we are uploading your file',
                 compact('exception')

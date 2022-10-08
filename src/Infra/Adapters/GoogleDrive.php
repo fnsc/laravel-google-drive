@@ -20,8 +20,7 @@ class GoogleDrive implements GoogleDriveContract
         $googleDriveFile->setOriginalFilename($uploadedFile->getFilename());
 
         return $this->googleServiceDrive
-            ->files
-            ->create($googleDriveFile, [
+            ->files->create($googleDriveFile, [
                 'data' => $uploadedFile->getContent(),
                 'mimeType' => 'application/octet-stream',
                 'uploadType' => 'media',

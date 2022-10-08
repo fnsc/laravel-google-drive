@@ -5,25 +5,25 @@ namespace LaravelGoogleDrive\Infra\Providers;
 use Google\Service\Drive;
 use Google_Client;
 use Google_Service_Drive;
-use Illuminate\Config\Repository as Config;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
 use LaravelGoogleDrive\Application\GoogleDriveService;
 use LaravelGoogleDrive\Infra\Adapters\GoogleDrive;
 
-class LaravelGoogleDriveServiceProvider extends ServiceProvider
+class LaravelGoogleDriveServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/../config/google_drive.php' => config_path(
+            __DIR__ . '/../../../config/google_drive.php' => config_path(
                 'google_drive.php'
             ),
         ], 'config');
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/google_drive.php',
+            __DIR__ . '/../../../config/google_drive.php',
             'google_drive'
         );
     }
@@ -33,24 +33,21 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider
         $this->app->bind(
             Google_Service_Drive::class,
             function (Application $app) {
-                return $app->make(Google_Client::class);
+                $client = $app->make(Google_Client::class);
+                $googleServiceDrive = new Google_Service_Drive($client);
+                $googleServiceDrive->servicePath = config('google_drive.credentials.folderId');
+
+                return $googleServiceDrive;
             }
         );
 
-        $this->app->bind(Google_Client::class, function (Config $config) {
+        $this->app->bind(Google_Client::class, function () {
             $client = new Google_Client();
-            $client->setClientId(
-                $config->get('google_drive.credentials.clientId')
-            );
-            $client->setClientSecret(
-                $config->get('google_drive.credentials.clientSecret')
-            );
-            $client->refreshToken(
-                $config->get('google_drive.credentials.refreshToken')
-            );
             $client->addScope(Drive::DRIVE);
-            $token = $client->fetchAccessTokenWithRefreshToken();
-            $client->setAccessToken($token);
+//            $client->setClientId(config('google_drive.credentials.clientId'));
+//            $client->setClientSecret(config('google_drive.credentials.clientSecret'));
+            $client->setAuthConfig(__DIR__ . '/../../../storage/credentials/google_secret.json');
+            $client->setAccessToken(config('google_drive.credentials.refreshToken'));
 
             return $client;
         });
@@ -67,5 +64,14 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider
         $this->app->bind('googleDrive', function (Application $app) {
             return $app->make(GoogleDriveService::class);
         });
+    }
+
+    public function provides(): array
+    {
+        return [
+            Google_Service_Drive::class,
+            Google_Client::class,
+            GoogleDriveContract::class,
+        ];
     }
 }
