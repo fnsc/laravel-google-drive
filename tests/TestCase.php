@@ -2,14 +2,30 @@
 
 namespace Tests;
 
+use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use LaravelGoogleDrive\Infra\Providers\LaravelGoogleDriveServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
+    public function getFixture(string $fileName): string
+    {
+        return __DIR__ . '/fixtures/' . $fileName;
+    }
+
     protected function getPackageProviders(mixed $app): array
     {
-        return [LaravelGoogleDriveServiceProvider::class];
+        return [
+            LaravelGoogleDriveServiceProvider::class,
+        ];
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        $app->useEnvironmentPath(__DIR__ . '/..');
+        $app->bootstrapWith([LoadEnvironmentVariables::class]);
+
+        parent::getEnvironmentSetUp($app);
     }
 
     protected function instance(mixed $abstract, mixed $instance): object

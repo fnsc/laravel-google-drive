@@ -12,14 +12,14 @@ class GoogleDriveServiceTest extends TestCase
     {
         // Set
         $googleDriveService = $this->app->make(GoogleDriveService::class);
-        $file = new File(__DIR__ . '/../../../fixtures/file.txt');
+        $file = new File($this->getFixture('file.txt'));
 
         // Expectations
 
         // Action
         $result = $googleDriveService->upload($file);
 
-        dd($result);
+        dd($result->getId());
 
         // Assertions
     }

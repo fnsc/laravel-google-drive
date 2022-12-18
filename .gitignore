@@ -6,4 +6,4 @@
 /.vscode
 /vendor
 /coverage
-/storage
+/storage/credentials

@@ -2,10 +2,10 @@
 
 namespace LaravelGoogleDrive\Application\Contracts\Adapters;
 
-use Google\Service\Drive\DriveFile;
+use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use Symfony\Component\HttpFoundation\File\File;
 
 interface GoogleDriveContract
 {
-    public function upload(File $uploadedFile): DriveFile;
+    public function upload(File $uploadedFile): GoogleDriveFile;
 }
