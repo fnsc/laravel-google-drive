@@ -3,8 +3,8 @@
 namespace LaravelGoogleDrive\Application;
 
 use Exception;
-use Google\Service\Drive\DriveFile;
 use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
+use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -20,19 +20,23 @@ class GoogleDriveServiceTest extends TestCase
         /** @phpstan-ignore-next-line  */
         $googleDriveService = new GoogleDriveService($googleDrive, $logger);
         $file = m::mock(File::class);
+        $googleDriveFile = new GoogleDriveFile(
+            fileId: '639fa51de807c624220da745',
+            folderId: '639fa51de807c624220da746'
+        );
 
         // Expectations
         /** @phpstan-ignore-next-line  */
         $googleDrive->expects()
             ->upload($file)
-            ->andReturn(m::mock(DriveFile::class));
+            ->andReturn($googleDriveFile);
 
         // Action
         /** @phpstan-ignore-next-line  */
         $result = $googleDriveService->upload($file);
 
         // Assertions
-        $this->assertInstanceOf(DriveFile::class, $result);
+        $this->assertInstanceOf(GoogleDriveFile::class, $result);
     }
 
     public function testShouldReturnFalseWhenTheFileUploadFails(): void
