@@ -8,10 +8,7 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
-    public function getFixture(string $fileName): string
-    {
-        return __DIR__ . '/fixtures/' . $fileName;
-    }
+    use Fixtures;
 
     protected function getPackageProviders(mixed $app): array
     {
