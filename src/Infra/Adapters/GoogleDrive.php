@@ -7,6 +7,7 @@ use Google_Service_Drive;
 use Illuminate\Config\Repository;
 use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
+use LaravelGoogleDrive\Domain\Exceptions\FolderIdException;
 use Symfony\Component\HttpFoundation\File\File;
 
 class GoogleDrive implements GoogleDriveContract
@@ -17,9 +18,19 @@ class GoogleDrive implements GoogleDriveContract
     ) {
     }
 
+    /**
+     * @throws FolderIdException
+     */
     public function upload(File $uploadedFile, string $folderId): GoogleDriveFile
     {
         $folderId = $folderId ?: $this->config->get('google_drive.folder_id');
+
+        if (empty($folderId)) {
+            throw new FolderIdException(
+                'The folderId is empty. Please check GOOGLE_DRIVE_FOLDER_ID env variable or send the folderId as a param.'
+            );
+        }
+
         $googleDriveFile = new DriveFile([
             'name' => $uploadedFile->getFilename(),
             'parents' => [$folderId],

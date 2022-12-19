@@ -5,6 +5,7 @@ namespace LaravelGoogleDrive\Application;
 use Exception;
 use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
+use LaravelGoogleDrive\Domain\Exceptions\FolderIdException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -39,7 +40,10 @@ class GoogleDriveServiceTest extends TestCase
         $this->assertInstanceOf(GoogleDriveFile::class, $result);
     }
 
-    public function testShouldReturnFalseWhenTheFileUploadFails(): void
+    /**
+     * @dataProvider getExceptionsScenarios
+     */
+    public function testShouldReturnFalseWhenTheFileUploadFails(Exception $exception, string $logMessage): void
     {
         // Set
         $googleDrive = m::mock(GoogleDriveContract::class);
@@ -47,7 +51,6 @@ class GoogleDriveServiceTest extends TestCase
         /** @phpstan-ignore-next-line  */
         $googleDriveService = new GoogleDriveService($googleDrive, $logger);
         $file = m::mock(File::class);
-        $exception = new Exception('Something went wrong.');
 
         // Expectations
         /** @phpstan-ignore-next-line  */
@@ -58,7 +61,7 @@ class GoogleDriveServiceTest extends TestCase
         /** @phpstan-ignore-next-line  */
         $logger->expects()
             ->warning(
-                '[LaravelGoogleDrive|Upload] Something went wrong while we are uploading your file',
+                $logMessage,
                 ['exception' => $exception]
             );
 
@@ -68,5 +71,22 @@ class GoogleDriveServiceTest extends TestCase
 
         // Assertions
         $this->assertFalse($result);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getExceptionsScenarios(): array
+    {
+        return [
+            'folder id empty' => [
+                'exception' => new FolderIdException(),
+                'log_message' => '[LaravelGoogleDrive|Upload] Folder id is empty. Please check GOOGLE_DRIVE_FOLDER_ID env variable or send the folderId as a param.',
+            ],
+            'unexpected exception' => [
+                'exception' => new Exception('Something went wrong.'),
+                'log_message' => '[LaravelGoogleDrive|Upload] Something went wrong while we are uploading your file',
+            ],
+        ];
     }
 }
