@@ -11,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
 use LaravelGoogleDrive\Application\GoogleDriveService;
+use LaravelGoogleDrive\Domain\Exceptions\CredentialException;
 use LaravelGoogleDrive\Infra\Adapters\GoogleDrive;
 
 class LaravelGoogleDriveServiceProvider extends ServiceProvider implements DeferrableProvider
@@ -87,15 +88,23 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
 
     /**
      * @return array<string,string>
+     * @throws CredentialException
      */
     private function getCredentials(): array
     {
         $credentialsFilePath = config(
             'google_drive.credentials.service_account'
         );
+
         $credentialsFileContent = file_get_contents(
             $credentialsFilePath
         ) ?: '';
+
+        if (empty($credentialsFileContent)) {
+            throw new CredentialException(
+                'Credential data not found. Please check the GOOGLE_APPLICATION_CREDENTIALS env variable.'
+            );
+        }
 
         return json_decode($credentialsFileContent, true) ?: [];
     }
