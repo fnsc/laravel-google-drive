@@ -15,6 +15,12 @@ class LaravelGoogleDriveServiceProviderTest extends TestCase
 {
     public function testShouldRegister(): void
     {
+        // Set
+        $credentialFileContent = $this->getFixture('service-account.json');
+        config(
+            ['google_drive.credentials.service_account' => $credentialFileContent]
+        );
+
         // Action
         $googleClient = $this->app->make(Google_Client::class);
         $googleServiceDrive = $this->app->make(Google_Service_Drive::class);
@@ -49,7 +55,9 @@ class LaravelGoogleDriveServiceProviderTest extends TestCase
     public function testShouldThrowAnExceptionWhenCredentialsFileIsEmpty(): void
     {
         // Set
-        $credentialFileContent = $this->getFixture('service-account.json');
+        $credentialFileContent = $this->getFixture(
+            'empty-service-account.json'
+        );
         config(
             ['google_drive.credentials.service_account' => $credentialFileContent]
         );
