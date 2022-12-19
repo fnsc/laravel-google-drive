@@ -23,7 +23,30 @@ class GoogleDrive implements GoogleDriveContract
      */
     public function upload(File $uploadedFile, string $folderId): GoogleDriveFile
     {
-        $folderId = $folderId ?: $this->config->get('google_drive.folder_id');
+        $folderId = $this->getFolderId($folderId);
+        $googleDriveFile = $this->getGoogleDriveFile($uploadedFile, $folderId);
+        $driveFile = $this->uploadToGoogleDrive(
+            $googleDriveFile,
+            $uploadedFile
+        );
+
+        return new GoogleDriveFile(
+            fileId: $driveFile->getId(),
+            folderId: $folderId
+        );
+    }
+
+    /**
+     * @param string $folderId
+     * @return string
+     * @throws FolderIdException
+     */
+    private function getFolderId(string $folderId): string
+    {
+        $folderId = $folderId ?: $this->config->get(
+            'google_drive.folder_id',
+            ''
+        );
 
         if (empty($folderId)) {
             throw new FolderIdException(
@@ -31,23 +54,36 @@ class GoogleDrive implements GoogleDriveContract
             );
         }
 
-        $googleDriveFile = new DriveFile([
+        return $folderId;
+    }
+
+    /**
+     * @param File   $uploadedFile
+     * @param string $folderId
+     * @return DriveFile
+     */
+    private function getGoogleDriveFile(File $uploadedFile, string $folderId): DriveFile
+    {
+        return new DriveFile([
             'name' => $uploadedFile->getFilename(),
             'parents' => [$folderId],
         ]);
+    }
 
-        $driveFile = $this->googleServiceDrive->files->create(
+    /**
+     * @param DriveFile $googleDriveFile
+     * @param File      $uploadedFile
+     * @return DriveFile
+     */
+    private function uploadToGoogleDrive(DriveFile $googleDriveFile, File $uploadedFile): DriveFile
+    {
+        return $this->googleServiceDrive->files->create(
             $googleDriveFile,
             [
                 'data' => $uploadedFile->getContent(),
                 'uploadType' => 'multipart',
                 'fields' => 'id',
             ]
-        );
-
-        return new GoogleDriveFile(
-            fileId: $driveFile->getId(),
-            folderId: $folderId
         );
     }
 }
