@@ -35,43 +35,10 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
 
     public function register(): void
     {
-        $this->app->bind(Google_Client::class, function () {
-            $client = new Google_Client();
-            $client->addScope(Drive::DRIVE);
-
-            $credentials = $this->getCredentials();
-
-            $client->setAuthConfig($credentials);
-
-            return $client;
-        });
-
-        $this->app->bind(
-            Google_Service_Drive::class,
-            function (Application $app) {
-                $client = $app->make(Google_Client::class);
-                $googleServiceDrive = new Google_Service_Drive($client);
-                $googleServiceDrive->servicePath = config(
-                    'google_drive.folder_id'
-                );
-
-                return $googleServiceDrive;
-            }
-        );
-
-        $this->app->bind(
-            GoogleDriveContract::class,
-            function (Application $application) {
-                $service = $application->make(Google_Service_Drive::class);
-                $config = $application->make(Repository::class);
-
-                return new GoogleDrive($service, $config);
-            }
-        );
-
-        $this->app->bind('googleDrive', function (Application $application) {
-            return $application->make(GoogleDriveService::class);
-        });
+        $this->registerGoogleClient();
+        $this->registerGoogleServiceDrive();
+        $this->registerGoogleDriveAdapter();
+        $this->registerGoogleDriveService();
     }
 
     /**
@@ -107,5 +74,65 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
         }
 
         return json_decode($credentialsFileContent, true) ?: [];
+    }
+
+    /**
+     * @return void
+     */
+    private function registerGoogleClient(): void
+    {
+        $this->app->bind(Google_Client::class, function () {
+            $client = new Google_Client();
+            $client->addScope(Drive::DRIVE);
+            $credentials = $this->getCredentials();
+            $client->setAuthConfig($credentials);
+
+            return $client;
+        });
+    }
+
+    /**
+     * @return void
+     */
+    private function registerGoogleServiceDrive(): void
+    {
+        $this->app->bind(
+            Google_Service_Drive::class,
+            function (Application $app) {
+                $client = $app->make(Google_Client::class);
+                $googleServiceDrive = new Google_Service_Drive($client);
+                $googleServiceDrive->servicePath = config(
+                    'google_drive.folder_id'
+                );
+
+                return $googleServiceDrive;
+            }
+        );
+    }
+
+    /**
+     * @return void
+     */
+    private function registerGoogleDriveAdapter(): void
+    {
+        $this->app->bind(
+            GoogleDriveContract::class,
+            function (Application $application) {
+                $service = $application->make(Google_Service_Drive::class);
+                $config = $application->make(Repository::class);
+
+                return new GoogleDrive($service, $config);
+            }
+        );
+    }
+
+    /**
+     * @return void
+     */
+    private function registerGoogleDriveService(): void
+    {
+        $this->app->bind('googleDrive', function (Application $application) {
+            return $application->make(GoogleDriveService::class);
+        });
     }
 }
