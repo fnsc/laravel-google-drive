@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="CPF/CNPJ Validator">
+<ruleset name="Laravel/GoogleDrive">
     <arg name="basepath" value="."/>
     <arg name="extensions" value="php"/>
     <arg name="parallel" value="45"/>

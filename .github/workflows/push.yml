@@ -15,8 +15,11 @@ jobs:
       - name: Run Code Standards
         run: docker-compose run --rm -T php vendor/bin/phpcs
 
-      - name: Run Unit Tests
-        run: docker-compose run --rm -T php vendor/bin/phpunit tests/Unit
+      - name: Run Tests
+        run: docker-compose run --rm -T php vendor/bin/phpunit tests/ --coverage-clover report.xml
 
-      - name: Run Feature Tests
-        run: docker-compose run --rm -T php vendor/bin/phpunit tests/Feature
+      - name: Report Coverage
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: ./report.xml

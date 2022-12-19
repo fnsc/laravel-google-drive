@@ -9,9 +9,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 RUN apt-get update && apt-get install git zip unzip vim -y \
     && apt-get clean
 
-RUN pecl install docker-php-ext-enable \
-    xdebug \
-  && rm -rf /tmp/*
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    && rm -rf /tmp/*
 
 ARG UID=1000
 ARG GID=1000
