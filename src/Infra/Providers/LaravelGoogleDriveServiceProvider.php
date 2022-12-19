@@ -63,17 +63,15 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
             'google_drive.credentials.service_account'
         );
 
-        $credentialsFileContent = file_get_contents(
-            $credentialsFilePath
-        ) ?: '';
-
-        if (empty($credentialsFileContent)) {
+        if (empty($credentialsFilePath)) {
             throw new CredentialException(
                 'Credential data not found. Please check the GOOGLE_APPLICATION_CREDENTIALS env variable.'
             );
         }
 
-        return json_decode($credentialsFileContent, true) ?: [];
+        $credentialsFileContent = file_get_contents($credentialsFilePath);
+
+        return json_decode($credentialsFileContent ?: '', true) ?: [];
     }
 
     /**
@@ -85,6 +83,13 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
             $client = new Google_Client();
             $client->addScope(Drive::DRIVE);
             $credentials = $this->getCredentials();
+
+            if (empty($credentials)) {
+                throw new CredentialException(
+                    'Credential data not found. Please check the service account file content.'
+                );
+            }
+
             $client->setAuthConfig($credentials);
 
             return $client;
