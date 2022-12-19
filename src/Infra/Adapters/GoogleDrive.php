@@ -17,9 +17,9 @@ class GoogleDrive implements GoogleDriveContract
     ) {
     }
 
-    public function upload(File $uploadedFile): GoogleDriveFile
+    public function upload(File $uploadedFile, string $folderId): GoogleDriveFile
     {
-        $folderId = $this->config->get('google_drive.folder_id');
+        $folderId = $folderId ?: $this->config->get('google_drive.folder_id');
         $googleDriveFile = new DriveFile([
             'name' => $uploadedFile->getFilename(),
             'parents' => [$folderId],

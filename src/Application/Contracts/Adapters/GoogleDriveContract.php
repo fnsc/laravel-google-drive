@@ -7,5 +7,5 @@ use Symfony\Component\HttpFoundation\File\File;
 
 interface GoogleDriveContract
 {
-    public function upload(File $uploadedFile): GoogleDriveFile;
+    public function upload(File $uploadedFile, string $folderId): GoogleDriveFile;
 }

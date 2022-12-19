@@ -16,10 +16,10 @@ class GoogleDriveService
     ) {
     }
 
-    public function upload(File $file): GoogleDriveFile|bool
+    public function upload(File $file, string $folderId = ''): GoogleDriveFile|bool
     {
         try {
-            return $this->googleDrive->upload($file);
+            return $this->googleDrive->upload($file, $folderId);
         } catch (Exception $exception) {
             $this->logger->warning(
                 '[LaravelGoogleDrive|Upload] Something went wrong while we are uploading your file',

@@ -28,7 +28,7 @@ class GoogleDriveServiceTest extends TestCase
         // Expectations
         /** @phpstan-ignore-next-line  */
         $googleDrive->expects()
-            ->upload($file)
+            ->upload($file, '')
             ->andReturn($googleDriveFile);
 
         // Action
@@ -52,7 +52,7 @@ class GoogleDriveServiceTest extends TestCase
         // Expectations
         /** @phpstan-ignore-next-line  */
         $googleDrive->expects()
-            ->upload($file)
+            ->upload($file, '')
             ->andThrow($exception);
 
         /** @phpstan-ignore-next-line  */
