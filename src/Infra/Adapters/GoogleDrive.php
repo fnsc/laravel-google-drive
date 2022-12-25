@@ -4,9 +4,11 @@ namespace LaravelGoogleDrive\Infra\Adapters;
 
 use Google\Service\Drive\DriveFile;
 use Google_Service_Drive;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Config\Repository;
 use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
+use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
 use LaravelGoogleDrive\Domain\Exceptions\FolderIdException;
 use Symfony\Component\HttpFoundation\File\File;
 
@@ -21,18 +23,32 @@ class GoogleDrive implements GoogleDriveContract
     /**
      * @throws FolderIdException
      */
-    public function upload(File $uploadedFile, string $folderId): GoogleDriveFile
+    public function upload(File $uploadedFile, string $folderId): GoogleDriveFileData
     {
         $folderId = $this->getFolderId($folderId);
-        $googleDriveFile = $this->getGoogleDriveFile($uploadedFile, $folderId);
+        $googleDriveFile = $this->buildDriveFile($uploadedFile, $folderId);
         $driveFile = $this->uploadToGoogleDrive(
             $googleDriveFile,
             $uploadedFile
         );
 
-        return new GoogleDriveFile(
+        return new GoogleDriveFileData(
             fileId: $driveFile->getId(),
             folderId: $folderId
+        );
+    }
+
+    public function get(string $fileName, string $fileId): GoogleDriveFile
+    {
+        $response = $this->getGoogleDriveFile($fileId);
+
+        return new GoogleDriveFile(
+            fileId: $fileId,
+            name: $fileName,
+            content: $response->getBody()->getContents(),
+            mimeType: current(
+                $response->getHeader('Content-Type')
+            ) ?: 'application/octet-stream'
         );
     }
 
@@ -62,7 +78,7 @@ class GoogleDrive implements GoogleDriveContract
      * @param string $folderId
      * @return DriveFile
      */
-    private function getGoogleDriveFile(File $uploadedFile, string $folderId): DriveFile
+    private function buildDriveFile(File $uploadedFile, string $folderId): DriveFile
     {
         return new DriveFile([
             'name' => $uploadedFile->getFilename(),
@@ -85,5 +101,17 @@ class GoogleDrive implements GoogleDriveContract
                 'fields' => 'id',
             ]
         );
+    }
+
+    /**
+     * @param string $fileId
+     * @return Response
+     */
+    private function getGoogleDriveFile(string $fileId): Response
+    {
+        return $this->googleServiceDrive->files->get($fileId, [
+            'fields' => 'name,size,id',
+            'alt' => 'media',
+        ]);
     }
 }

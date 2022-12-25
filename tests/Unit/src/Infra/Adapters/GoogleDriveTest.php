@@ -6,7 +6,7 @@ use Google\Service\Drive\DriveFile;
 use Google\Service\Drive\Resource\Files;
 use Google_Service_Drive;
 use Illuminate\Config\Repository;
-use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
+use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
 use LaravelGoogleDrive\Domain\Exceptions\FolderIdException;
 use Mockery as m;
 use Symfony\Component\HttpFoundation\File\File;
@@ -56,7 +56,7 @@ class GoogleDriveTest extends LeanTestCase
         $result = $adapter->upload($file, '');
 
         // Assertions
-        $this->assertInstanceOf(GoogleDriveFile::class, $result);
+        $this->assertInstanceOf(GoogleDriveFileData::class, $result);
         $this->assertSame('639fe3a43289654a020e8dd9', $result->getFileId());
         $this->assertSame('639fe1f53289654a020e8dd8', $result->getFolderId());
     }
