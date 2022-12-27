@@ -25,10 +25,15 @@ class LaravelGoogleDriveServiceProviderTest extends TestCase
         ]);
 
         // Action
+        /** @phpstan-ignore-next-line */
         $config = $this->app->make(ConfigContract::class);
+        /** @phpstan-ignore-next-line */
         $googleClient = $this->app->make(Google_Client::class);
+        /** @phpstan-ignore-next-line */
         $googleServiceDrive = $this->app->make(Google_Service_Drive::class);
+        /** @phpstan-ignore-next-line */
         $googleAdapter = $this->app->make(GoogleDrive::class);
+        /** @phpstan-ignore-next-line */
         $service = $this->app->make('googleDrive');
 
         // Assertions
@@ -54,6 +59,7 @@ class LaravelGoogleDriveServiceProviderTest extends TestCase
         );
 
         // Action
+        /** @phpstan-ignore-next-line */
         $this->app->make(Google_Client::class);
     }
 
@@ -74,6 +80,7 @@ class LaravelGoogleDriveServiceProviderTest extends TestCase
         );
 
         // Action
+        /** @phpstan-ignore-next-line */
         $this->app->make(Google_Client::class);
     }
 
