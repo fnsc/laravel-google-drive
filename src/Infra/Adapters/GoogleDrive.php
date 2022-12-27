@@ -5,31 +5,23 @@ namespace LaravelGoogleDrive\Infra\Adapters;
 use Google\Service\Drive\DriveFile;
 use Google_Service_Drive;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Config\Repository;
-use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
+use LaravelGoogleDrive\Application\Ports\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
-use LaravelGoogleDrive\Domain\Exceptions\FolderIdException;
-use Symfony\Component\HttpFoundation\File\File;
 
 class GoogleDrive implements GoogleDriveContract
 {
     public function __construct(
         private readonly Google_Service_Drive $googleServiceDrive,
-        private readonly Repository $config
     ) {
     }
 
-    /**
-     * @throws FolderIdException
-     */
-    public function upload(File $uploadedFile, string $folderId): GoogleDriveFileData
+    public function upload(GoogleDriveFile $file, string $folderId): GoogleDriveFileData
     {
-        $folderId = $this->getFolderId($folderId);
-        $googleDriveFile = $this->buildDriveFile($uploadedFile, $folderId);
+        $googleDriveFile = $this->buildDriveFile($file, $folderId);
         $driveFile = $this->uploadToGoogleDrive(
             $googleDriveFile,
-            $uploadedFile
+            $file
         );
 
         return new GoogleDriveFileData(
@@ -43,60 +35,40 @@ class GoogleDrive implements GoogleDriveContract
         $response = $this->getGoogleDriveFile($fileId);
 
         return new GoogleDriveFile(
-            fileId: $fileId,
             name: $fileName,
             content: $response->getBody()->getContents(),
             mimeType: current(
                 $response->getHeader('Content-Type')
-            ) ?: 'application/octet-stream'
+            ) ?: 'application/octet-stream',
+            fileId: $fileId
         );
     }
 
-    /**
-     * @param string $folderId
-     * @return string
-     * @throws FolderIdException
-     */
-    private function getFolderId(string $folderId): string
-    {
-        $folderId = $folderId ?: $this->config->get(
-            'google_drive.folder_id',
-            ''
-        );
-
-        if (empty($folderId)) {
-            throw new FolderIdException(
-                'The folderId is empty. Please check GOOGLE_DRIVE_FOLDER_ID env variable or send the folderId as a param.'
-            );
-        }
-
-        return $folderId;
-    }
 
     /**
-     * @param File   $uploadedFile
-     * @param string $folderId
+     * @param GoogleDriveFile $uploadedFile
+     * @param string          $folderId
      * @return DriveFile
      */
-    private function buildDriveFile(File $uploadedFile, string $folderId): DriveFile
+    private function buildDriveFile(GoogleDriveFile $uploadedFile, string $folderId): DriveFile
     {
         return new DriveFile([
-            'name' => $uploadedFile->getFilename(),
+            'name' => $uploadedFile->getName(),
             'parents' => [$folderId],
         ]);
     }
 
     /**
-     * @param DriveFile $googleDriveFile
-     * @param File      $uploadedFile
+     * @param DriveFile       $googleDriveFile
+     * @param GoogleDriveFile $file
      * @return DriveFile
      */
-    private function uploadToGoogleDrive(DriveFile $googleDriveFile, File $uploadedFile): DriveFile
+    private function uploadToGoogleDrive(DriveFile $googleDriveFile, GoogleDriveFile $file): DriveFile
     {
         return $this->googleServiceDrive->files->create(
             $googleDriveFile,
             [
-                'data' => $uploadedFile->getContent(),
+                'data' => $file->getContent(),
                 'uploadType' => 'multipart',
                 'fields' => 'id',
             ]

@@ -5,10 +5,10 @@ namespace LaravelGoogleDrive\Domain\Entities;
 final class GoogleDriveFile
 {
     public function __construct(
-        private readonly string $fileId,
         private readonly string $name,
         private readonly string $content,
         private readonly string $mimeType,
+        private readonly string $fileId = '',
     ) {
     }
 
