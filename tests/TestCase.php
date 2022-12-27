@@ -27,6 +27,7 @@ class TestCase extends BaseTestCase
 
     protected function instance(mixed $abstract, mixed $instance): object
     {
+        /** @phpstan-ignore-next-line */
         $this->app->bind(
             $abstract,
             function () use ($instance) {

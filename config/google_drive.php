@@ -9,6 +9,4 @@ return [
     ],
 
     'folder_id' => env('GOOGLE_DRIVE_FOLDER_ID'),
-
-    'tmp_directory' => env('TMP_DIRECTORY', '/tmp/'),
 ];
