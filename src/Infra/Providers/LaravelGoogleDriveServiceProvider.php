@@ -9,10 +9,12 @@ use Illuminate\Config\Repository;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
-use LaravelGoogleDrive\Application\Contracts\Adapters\GoogleDriveContract;
-use LaravelGoogleDrive\Application\GoogleDriveService;
+use LaravelGoogleDrive\Application\Ports\ConfigContract;
+use LaravelGoogleDrive\Application\Ports\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Exceptions\CredentialException;
-use LaravelGoogleDrive\Infra\Adapters\GoogleDrive;
+use LaravelGoogleDrive\Infra\Adapters\Config;
+use LaravelGoogleDrive\Infra\Adapters\GoogleDrive as GoogleDriveAdapter;
+use LaravelGoogleDrive\Infra\Handlers\GoogleDrive as GoogleDriveHandler;
 
 class LaravelGoogleDriveServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -38,7 +40,8 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
         $this->registerGoogleClient();
         $this->registerGoogleServiceDrive();
         $this->registerGoogleDriveAdapter();
-        $this->registerGoogleDriveService();
+        $this->registerConfigAdapter();
+        $this->registerGoogleDriveHandler();
     }
 
     /**
@@ -50,6 +53,8 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
             Google_Service_Drive::class,
             Google_Client::class,
             GoogleDriveContract::class,
+            ConfigContract::class,
+            GoogleDriveHandler::class,
         ];
     }
 
@@ -124,9 +129,8 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
             GoogleDriveContract::class,
             function (Application $application) {
                 $service = $application->make(Google_Service_Drive::class);
-                $config = $application->make(Repository::class);
 
-                return new GoogleDrive($service, $config);
+                return new GoogleDriveAdapter($service);
             }
         );
     }
@@ -134,10 +138,19 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
     /**
      * @return void
      */
-    private function registerGoogleDriveService(): void
+    private function registerGoogleDriveHandler(): void
     {
         $this->app->bind('googleDrive', function (Application $application) {
-            return $application->make(GoogleDriveService::class);
+            return $application->make(GoogleDriveHandler::class);
+        });
+    }
+
+    private function registerConfigAdapter(): void
+    {
+        $this->app->bind(ConfigContract::class, function () {
+            $config = $this->app->make(Repository::class);
+
+            return new Config($config);
         });
     }
 }
