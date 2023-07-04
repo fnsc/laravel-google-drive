@@ -3,7 +3,9 @@
 .phpcs-cache
 .phpunit.result.cache
 /.idea
+/.phpunit.cache
 /.vscode
 /vendor
 /coverage
 /storage/credentials
+/storage/temp

@@ -4,7 +4,7 @@
     <a href="https://github.com/fnsc/laravel-google-drive/graphs/contributors" alt="Contributors"><img src="https://img.shields.io/github/contributors/fnsc/laravel-google-drive" /></a>
     <a href="https://github.com/fnsc/laravel-google-drive/actions?query=workflow%3ATests"><img src="https://github.com/fnsc/laravel-google-drive/workflows/Tests/badge.svg" alt="Tests Status"></a>
     <a href="https://www.codacy.com/gh/fnsc/laravel-google-drive/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fnsc/laravel-google-drive&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/a0d0146de7fe421295e99a0c09b9db8c"/></a>
-<a href="https://www.codacy.com/gh/fnsc/laravel-google-drive/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fnsc/laravel-google-drive&amp;utm_campaign=Badge_Coverage"><img src="https://app.codacy.com/project/badge/Coverage/a0d0146de7fe421295e99a0c09b9db8c"/></a>
+    <a href="https://www.codacy.com/gh/fnsc/laravel-google-drive/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fnsc/laravel-google-drive&amp;utm_campaign=Badge_Coverage"><img src="https://app.codacy.com/project/badge/Coverage/a0d0146de7fe421295e99a0c09b9db8c"/></a>
 </p>
 
 
@@ -19,7 +19,7 @@ This library provides a simple and easy way to deal with [Google Drive](https://
 
 ## Requirements
 - PHP >= 8.1^
-- Laravel >= 9.*
+- Laravel >= 10.*
 
 ## Installation
 You can install the library via Composer:
@@ -28,14 +28,16 @@ composer require fnsc/laravel-google-drive
 ```
 
 ## Guide
-First, add this file `LaravelGoogleDrive\Infra\Providers\LaravelGoogleDriveServiceProvider::class` to your `config/app.php` file.
-<p align="center"><img src="./docs/img/config_app.png" alt="app.php"/></p>
+First, add this file `LaravelGoogleDrive\ServiceProvider::class` to your `config/app.php` file.
+
+[//]: # (<p align="center"><img src="./docs/img/config_app.png" alt="app.php"/></p>)
 
 Then publish the `google_drive.php` config file using the following command. That will add `google_drive.php` config file into you `config` directory. 
 ```bash
-php artisan vendor:publish --provider="LaravelGoogleDrive\Infra\Providers\LaravelGoogleDriveServiceProvider"
+php artisan vendor:publish --provider="LaravelGoogleDrive\ServiceProvider"
 ```
-<p align="center"><img src="./docs/img/google_drive.png" alt="config dir"/></p>
+
+[//]: # (<p align="center"><img src="./docs/img/google_drive.png" alt="config dir"/></p>)
 
 Now go to [Google Cloud Platform](https://console.cloud.google.com) and create a service account using this [link](https://console.cloud.google.com/apis/credentials) and click on Service Account.
 <p align="center"><img src="./docs/img/service_account/step_1.png" alt="step 1"/></p>
