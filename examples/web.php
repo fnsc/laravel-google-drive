@@ -21,6 +21,7 @@ Route::post(
 
         return new JsonResponse([
             'folder_id' => $result->getFolderId(),
+            'file_name' => $result->getFileName(),
             'file_id' => $result->getFileId(),
         ]);
     }
@@ -40,6 +41,7 @@ Route::post(
         foreach ($result as $fileData) {
             $payload[] = [
                 'folder_id' => $fileData->getFolderId(),
+                'file_name' => $fileData->getFileName(),
                 'file_id' => $fileData->getFileId(),
             ];
         }
