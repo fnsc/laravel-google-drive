@@ -26,6 +26,7 @@ class UploaderTest extends LeanTestCase
         );
         $googleDriveFile = new GoogleDriveFileData(
             fileId: '639fa51de807c624220da745',
+            fileName: 'file.txt',
             folderId: '639fa51de807c624220da746'
         );
 

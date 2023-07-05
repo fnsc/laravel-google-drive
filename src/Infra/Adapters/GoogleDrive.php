@@ -26,6 +26,7 @@ class GoogleDrive implements GoogleDriveContract
 
         return new GoogleDriveFileData(
             fileId: $driveFile->getId(),
+            fileName: $file->getName(),
             folderId: $folderId
         );
     }

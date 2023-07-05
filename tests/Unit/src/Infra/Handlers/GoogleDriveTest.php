@@ -33,6 +33,7 @@ class GoogleDriveTest extends LeanTestCase
 
         $fileData = new GoogleDriveFileData(
             fileId: '63ab4f34fecd335a6c043104',
+            fileName: 'file.txt',
             folderId: '63ab4f34fecd335a6c043105'
         );
 
@@ -49,6 +50,7 @@ class GoogleDriveTest extends LeanTestCase
         $this->assertInstanceOf(GoogleDriveFileData::class, $result);
         $this->assertSame('63ab4f34fecd335a6c043104', $result->getFileId());
         $this->assertSame('63ab4f34fecd335a6c043105', $result->getFolderId());
+        $this->assertSame('file.txt', $result->getFileName());
     }
 
     public function testShouldUploadMoreThanOneFile(): void
@@ -78,11 +80,13 @@ class GoogleDriveTest extends LeanTestCase
 
         $fileData1 = new GoogleDriveFileData(
             fileId: '63ab4f34fecd335a6c043104',
+            fileName: 'file.txt',
             folderId: '63ab4f34fecd335a6c043105'
         );
 
         $fileData2 = new GoogleDriveFileData(
             fileId: '64a3816f4c60b3fa83089850',
+            fileName: 'test.jpeg',
             folderId: '63ab4f34fecd335a6c043105'
         );
 
