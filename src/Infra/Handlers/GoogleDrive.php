@@ -32,9 +32,7 @@ class GoogleDrive
 
     /**
      * @param UploadedFile[] $uploadedFiles
-     * @param string         $folderId
      * @return GoogleDriveFileData[]
-     * @throws InvalidDataProvidedException
      */
     public function uploadMany(array $uploadedFiles, string $folderId = ''): array
     {

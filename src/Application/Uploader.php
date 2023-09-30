@@ -16,9 +16,6 @@ class Uploader
     ) {
     }
 
-    /**
-     * @throws FolderIdException
-     */
     public function upload(GoogleDriveFile $file, string $folderId): GoogleDriveFileData
     {
         $folderId = $this->getFolderId($folderId);
@@ -26,9 +23,6 @@ class Uploader
         return $this->googleDrive->upload($file, $folderId);
     }
 
-    /**
-     * @throws FolderIdException
-     */
     private function getFolderId(string $folderId): string
     {
         $folderId = $folderId ?: $this->config->get(

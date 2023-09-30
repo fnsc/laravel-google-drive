@@ -12,33 +12,21 @@ final class GoogleDriveFile
     ) {
     }
 
-    /**
-     * @return string
-     */
     public function getFileId(): string
     {
         return $this->fileId;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getContent(): string
     {
         return $this->content;
     }
 
-    /**
-     * @return string
-     */
     public function getMimeType(): string
     {
         return $this->mimeType;

@@ -11,25 +11,16 @@ final class GoogleDriveFileData
     ) {
     }
 
-    /**
-     * @return string
-     */
     public function getFileId(): string
     {
         return $this->fileId;
     }
 
-    /**
-     * @return string
-     */
     public function getFileName(): string
     {
         return $this->fileName;
     }
 
-    /**
-     * @return string
-     */
     public function getFolderId(): string
     {
         return $this->folderId;
