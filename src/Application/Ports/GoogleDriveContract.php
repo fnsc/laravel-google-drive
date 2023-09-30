@@ -10,4 +10,6 @@ interface GoogleDriveContract
     public function upload(GoogleDriveFile $file, string $folderId): GoogleDriveFileData;
 
     public function get(string $fileName, string $fileId): GoogleDriveFile;
+
+    public function delete(string $fileId): bool;
 }
