@@ -166,4 +166,26 @@ class GoogleDriveTest extends LeanTestCase
         // Assertions
         $this->assertInstanceOf(GoogleDriveFile::class, $result);
     }
+
+    public function testShouldDeleteTheGivenFile(): void
+    {
+        // Set
+        $uploader = m::mock(Uploader::class);
+        $getter = m::mock(Getter::class);
+        $deleter = m::mock(Deleter::class);
+        /** @phpstan-ignore-next-line  */
+        $handler = new GoogleDrive($uploader, $getter, $deleter);
+
+        // Expectations
+        /** @phpstan-ignore-next-line  */
+        $deleter->expects()
+            ->delete('63ab4f34fecd335a6c043104')
+            ->andReturnTrue();
+
+        // Action
+        $result = $handler->delete('63ab4f34fecd335a6c043104');
+
+        // Assertions
+        $this->asserttrue($result);
+    }
 }
