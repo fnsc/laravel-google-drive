@@ -51,6 +51,19 @@ Route::post(
 );
 
 /**
+ * Delete a file
+ */
+Route::post(
+    'delete',
+    function (Request $request, GoogleDrive $service): JsonResponse {
+        $fileId = $request->get('file_id');
+        $result = $service->delete($fileId);
+
+        return new JsonResponse(['was_deleted' => $result]);
+    }
+);
+
+/**
  * Download single file example
  */
 Route::get('/download', function (GoogleDrive $service): Response {
