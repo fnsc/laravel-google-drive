@@ -47,7 +47,9 @@ class GoogleDrive implements GoogleDriveContract
 
     public function delete(string $fileId): bool
     {
-        return $this->googleServiceDrive->files->delete($fileId);
+        $response = $this->googleServiceDrive->files->delete($fileId);
+
+        return empty($response->getBody()->getContents());
     }
 
 
