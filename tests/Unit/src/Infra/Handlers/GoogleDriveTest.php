@@ -3,6 +3,7 @@
 namespace LaravelGoogleDrive\Infra\Handlers;
 
 use Illuminate\Http\UploadedFile;
+use LaravelGoogleDrive\Application\Deleter;
 use LaravelGoogleDrive\Application\Getter;
 use LaravelGoogleDrive\Application\Uploader;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
@@ -18,8 +19,9 @@ class GoogleDriveTest extends LeanTestCase
         // Set
         $uploader = $this->createMock(Uploader::class);
         $getter = m::mock(Getter::class);
+        $deleter = m::mock(Deleter::class);
         /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter);
+        $handler = new GoogleDrive($uploader, $getter, $deleter);
 
         $uploadedFile = new UploadedFile(
             $this->getFixture('file.txt'),
@@ -58,8 +60,9 @@ class GoogleDriveTest extends LeanTestCase
         // Set
         $uploader = $this->createMock(Uploader::class);
         $getter = m::mock(Getter::class);
+        $deleter = m::mock(Deleter::class);
         /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter);
+        $handler = new GoogleDrive($uploader, $getter, $deleter);
 
         $uploadedFile1 = new UploadedFile(
             $this->getFixture('file.txt'),
@@ -117,8 +120,9 @@ class GoogleDriveTest extends LeanTestCase
         // Set
         $uploader = m::mock(Uploader::class);
         $getter = m::mock(Getter::class);
+        $deleter = m::mock(Deleter::class);
         /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter);
+        $handler = new GoogleDrive($uploader, $getter, $deleter);
 
         $uploadedFiles = [
             'invalid data',
@@ -140,8 +144,9 @@ class GoogleDriveTest extends LeanTestCase
         // Set
         $uploader = m::mock(Uploader::class);
         $getter = m::mock(Getter::class);
+        $deleter = m::mock(Deleter::class);
         /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter);
+        $handler = new GoogleDrive($uploader, $getter, $deleter);
 
         $file = new GoogleDriveFile(
             name: 'file.txt',
