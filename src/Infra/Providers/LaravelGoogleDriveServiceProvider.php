@@ -60,7 +60,6 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
 
     /**
      * @return array<string,string>
-     * @throws CredentialException
      */
     private function getCredentials(): array
     {
@@ -79,9 +78,6 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
         return json_decode($credentialsFileContent ?: '', true) ?: [];
     }
 
-    /**
-     * @return void
-     */
     private function registerGoogleClient(): void
     {
         $this->app->bind(Google_Client::class, function () {
@@ -101,9 +97,6 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
         });
     }
 
-    /**
-     * @return void
-     */
     private function registerGoogleServiceDrive(): void
     {
         $this->app->bind(
@@ -120,9 +113,6 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
         );
     }
 
-    /**
-     * @return void
-     */
     private function registerGoogleDriveAdapter(): void
     {
         $this->app->bind(
@@ -135,9 +125,6 @@ class LaravelGoogleDriveServiceProvider extends ServiceProvider implements Defer
         );
     }
 
-    /**
-     * @return void
-     */
     private function registerGoogleDriveHandler(): void
     {
         $this->app->bind('googleDrive', function (Application $application) {

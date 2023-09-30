@@ -52,12 +52,6 @@ class GoogleDrive implements GoogleDriveContract
         return empty($response->getBody()->getContents());
     }
 
-
-    /**
-     * @param GoogleDriveFile $uploadedFile
-     * @param string          $folderId
-     * @return DriveFile
-     */
     private function buildDriveFile(GoogleDriveFile $uploadedFile, string $folderId): DriveFile
     {
         return new DriveFile([
@@ -66,11 +60,6 @@ class GoogleDrive implements GoogleDriveContract
         ]);
     }
 
-    /**
-     * @param DriveFile       $googleDriveFile
-     * @param GoogleDriveFile $file
-     * @return DriveFile
-     */
     private function uploadToGoogleDrive(DriveFile $googleDriveFile, GoogleDriveFile $file): DriveFile
     {
         return $this->googleServiceDrive->files->create(
@@ -83,10 +72,6 @@ class GoogleDrive implements GoogleDriveContract
         );
     }
 
-    /**
-     * @param string $fileId
-     * @return Response
-     */
     private function getGoogleDriveFile(string $fileId): Response
     {
         return $this->googleServiceDrive->files->get($fileId, [
