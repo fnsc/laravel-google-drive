@@ -107,4 +107,39 @@ class GoogleDriveTest extends LeanTestCase
         $this->assertSame('txt', $result->getExtension());
         $this->assertSame('hello world!!!', $result->getContent());
     }
+
+    public function testShouldDeleteTheGivenFile(): void
+    {
+        // Set
+        $resourceFiles = $this->createMock(Files::class);
+        $googleServiceDrive = m::mock(Google_Service_Drive::class);
+        /** @phpstan-ignore-next-line  */
+        $googleServiceDrive->files = $resourceFiles;
+        /** @phpstan-ignore-next-line  */
+        $adapter = new GoogleDrive($googleServiceDrive);
+
+        $response = m::mock(Response::class);
+        $stream = m::mock(StreamInterface::class);
+
+        // Expectations
+        $resourceFiles->expects($this->once())
+            ->method('delete')
+            ->with('file_id')->willReturn($response);
+
+        /** @phpstan-ignore-next-line  */
+        $response->expects()
+            ->getBody()
+            ->andReturn($stream);
+
+        /** @phpstan-ignore-next-line  */
+        $stream->expects()
+            ->getContents()
+            ->andReturn('');
+
+        // Action
+        $result = $adapter->delete('file_id');
+
+        // Assertions
+        $this->assertTrue($result);
+    }
 }

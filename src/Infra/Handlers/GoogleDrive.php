@@ -2,6 +2,7 @@
 
 namespace LaravelGoogleDrive\Infra\Handlers;
 
+use LaravelGoogleDrive\Application\Deleter;
 use LaravelGoogleDrive\Application\Getter;
 use LaravelGoogleDrive\Application\Uploader;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
@@ -13,7 +14,8 @@ class GoogleDrive
 {
     public function __construct(
         private readonly Uploader $uploader,
-        private readonly Getter $getter
+        private readonly Getter $getter,
+        private readonly Deleter $deleter
     ) {
     }
 
@@ -54,5 +56,10 @@ class GoogleDrive
     public function get(string $fileName, string $fileId): GoogleDriveFile
     {
         return $this->getter->get($fileName, $fileId);
+    }
+
+    public function delete(string $fileId): bool
+    {
+        return $this->deleter->delete($fileId);
     }
 }
