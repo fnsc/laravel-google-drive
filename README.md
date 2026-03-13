@@ -1,57 +1,118 @@
 <h1 align="center">Laravel Google Drive</h1>
 
 <p align="center">
-    <a href="https://github.com/fnsc/laravel-google-drive/graphs/contributors" alt="Contributors"><img src="https://img.shields.io/github/contributors/fnsc/laravel-google-drive" /></a>
+    <a href="https://github.com/fnsc/laravel-google-drive/graphs/contributors"><img src="https://img.shields.io/github/contributors/fnsc/laravel-google-drive" /></a>
     <a href="https://github.com/fnsc/laravel-google-drive/actions?query=workflow%3ATests"><img src="https://github.com/fnsc/laravel-google-drive/workflows/Tests/badge.svg" alt="Tests Status"></a>
-    <a href="https://www.codacy.com/gh/fnsc/laravel-google-drive/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fnsc/laravel-google-drive&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/a0d0146de7fe421295e99a0c09b9db8c"/></a>
-    <a href="https://www.codacy.com/gh/fnsc/laravel-google-drive/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fnsc/laravel-google-drive&amp;utm_campaign=Badge_Coverage"><img src="https://app.codacy.com/project/badge/Coverage/a0d0146de7fe421295e99a0c09b9db8c"/></a>
+    <a href="https://www.codacy.com/gh/fnsc/laravel-google-drive/dashboard"><img src="https://app.codacy.com/project/badge/Grade/a0d0146de7fe421295e99a0c09b9db8c"/></a>
+    <a href="https://www.codacy.com/gh/fnsc/laravel-google-drive/dashboard"><img src="https://app.codacy.com/project/badge/Coverage/a0d0146de7fe421295e99a0c09b9db8c"/></a>
 </p>
 
+A Laravel package to upload, download, and delete files on Google Drive using a service account.
 
-- [Introduction](#introduction)
-- [Requirements](#requirements) 
+- [Requirements](#requirements)
 - [Installation](#installation)
-- [Usage Guide](#guide)
+- [Setup](#setup)
+- [Usage](#usage)
 - [License](#license)
 
-## Introduction
-This library provides a simple and easy way to deal with [Google Drive](https://drive.google.com) files.
-
 ## Requirements
-- PHP >= 8.1^
-- Laravel >= 10.*
+
+- PHP ^8.2
+- Laravel ^10.0
 
 ## Installation
-You can install the library via Composer:
+
 ```bash
 composer require fnsc/laravel-google-drive
 ```
 
-## Guide
-First, add this file `LaravelGoogleDrive\ServiceProvider::class` to your `config/app.php` file.
+Publish the config file:
 
-[//]: # (<p align="center"><img src="./docs/img/config_app.png" alt="app.php"/></p>)
-
-Then publish the `google_drive.php` config file using the following command. That will add `google_drive.php` config file into you `config` directory. 
 ```bash
 php artisan vendor:publish --provider="LaravelGoogleDrive\ServiceProvider"
 ```
 
-[//]: # (<p align="center"><img src="./docs/img/google_drive.png" alt="config dir"/></p>)
+## Setup
 
-Now go to [Google Cloud Platform](https://console.cloud.google.com) and create a service account using this [link](https://console.cloud.google.com/apis/credentials) and click on Service Account.
-<p align="center"><img src="./docs/img/service_account/step_1.png" alt="step 1"/></p>
+### 1. Create a Google Service Account
 
-When you finish, the Google Service Manager will generate a .json file. That file contains your credentials. Download it and keep it safe. 
+Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials),
+create a Service Account, and download the generated JSON key file.
 
-Add this file to your project, and **DO NOT ADD THIS FILE TO YOUR GIT REPOSITORY**.
+Add the file to your project (e.g. `storage/app/service-account.json`) and **never commit it to git**.
 
-Now add the following `env_vars` into your `.env` file. The `GOOGLE_APPLICATION_CREDENTIALS` is the path to your `service-account.json` file, and the `GOOGLE_DRIVE_FOLDER_ID` is your directory on Google Drive.
-<p align="center"><img src="./docs/img/service_account/.env.png" alt=".env file"/></p>
+### 2. Share the Google Drive folder
 
-Now you must share the Google Drive directory with the `client_email` present in your `service-account.json` file, granting privileges to read and write.
+Open the target folder in Google Drive, click **Share**, and add the `client_email`
+from the JSON file with **Editor** access.
 
-Finally, you can follow the [examples](./examples/web.php). 
+### 3. Configure environment variables
+
+Add the following to your `.env` file:
+
+```env
+GOOGLE_APPLICATION_CREDENTIALS=storage/app/service-account.json
+GOOGLE_DRIVE_FOLDER_ID=your_folder_id_here
+```
+
+`GOOGLE_APPLICATION_CREDENTIALS` is the path to the JSON key file relative to the project root.
+`GOOGLE_DRIVE_FOLDER_ID` is the ID found in the Google Drive folder URL:
+`https://drive.google.com/drive/folders/<FOLDER_ID>`.
+
+## Usage
+
+Inject `LaravelGoogleDrive\GoogleDrive` into your controller or route closure.
+
+### Upload a file
+
+```php
+use LaravelGoogleDrive\GoogleDrive;
+use Illuminate\Http\Request;
+
+Route::post('/upload', function (Request $request, GoogleDrive $drive) {
+    $result = $drive->upload($request->file('file'));
+
+    return [
+        'file_id'   => $result->getFileId(),
+        'file_name' => $result->getFileName(),
+        'folder_id' => $result->getFolderId(),
+    ];
+});
+```
+
+To upload to a specific folder instead of the default one, pass the folder ID as the second argument:
+
+```php
+$drive->upload($request->file('file'), 'your_folder_id');
+```
+
+### Upload multiple files
+
+```php
+$results = $drive->uploadMany($request->file('files'));
+```
+
+### Download a file
+
+```php
+use Illuminate\Http\Response;
+
+Route::get('/download', function (GoogleDrive $drive) {
+    $file = $drive->get('filename.pdf', 'google_drive_file_id');
+
+    return new Response($file->getContent(), 200, [
+        'Content-Type'        => $file->getMimeType(),
+        'Content-Disposition' => 'attachment; filename=' . $file->getName(),
+    ]);
+});
+```
+
+### Delete a file
+
+```php
+$deleted = $drive->delete('google_drive_file_id'); // returns bool
+```
 
 ## License
-This package is free software distributed under the terms of the [MIT license](http://opensource.org/licenses/MIT)
+
+This package is free software distributed under the terms of the [MIT license](http://opensource.org/licenses/MIT).
