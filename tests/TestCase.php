@@ -17,7 +17,7 @@ class TestCase extends BaseTestCase
         ];
     }
 
-    protected function getEnvironmentSetUp($app)
+    protected function getEnvironmentSetUp($app): void
     {
         $app->useEnvironmentPath(__DIR__ . '/..');
         $app->bootstrapWith([LoadEnvironmentVariables::class]);

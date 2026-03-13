@@ -9,10 +9,10 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "illuminate/support": "^10.00",
-        "illuminate/console": "^10.00",
-        "illuminate/config": "^10.00",
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/console": "^10.0|^11.0|^12.0",
+        "illuminate/config": "^10.0|^11.0|^12.0",
         "google/apiclient": "^2.13"
     },
     "require-dev": {
@@ -22,7 +22,7 @@
         "phpstan/phpstan": "^1.10",
         "phpro/grumphp": "^v2.0.0",
         "mockery/mockery": "^1.6.2",
-        "orchestra/testbench": "^v8.5"
+        "orchestra/testbench": "^8.0|^9.0|^10.0"
     },
     "autoload": {
         "psr-4": {
