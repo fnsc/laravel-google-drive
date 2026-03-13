@@ -2,12 +2,16 @@
 
 namespace LaravelGoogleDrive\Infra\Adapters;
 
+use Google\Http\MediaFileUpload;
 use Google\Service\Drive\DriveFile;
+use Google_Client;
 use Google_Service_Drive;
 use GuzzleHttp\Psr7\Response;
 use LaravelGoogleDrive\Application\Ports\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
+use Psr\Http\Message\RequestInterface;
 
 class GoogleDrive implements GoogleDriveContract
 {
@@ -26,6 +30,59 @@ class GoogleDrive implements GoogleDriveContract
 
         return new GoogleDriveFileData(
             fileId: $driveFile->getId(),
+            fileName: $file->getName(),
+            folderId: $folderId
+        );
+    }
+
+    public function uploadResumable(LargeGoogleDriveFile $file, string $folderId, int $chunkSize): GoogleDriveFileData
+    {
+        $googleDriveFile = new DriveFile([
+            'name' => $file->getName(),
+            'parents' => [$folderId],
+        ]);
+
+        $client = $this->googleServiceDrive->getClient();
+        $client->setDefer(true);
+
+        try {
+            $request = $this->googleServiceDrive->files->create(
+                $googleDriveFile
+            );
+
+            $media = $this->createMediaFileUpload(
+                $client,
+                $request,
+                $file->getMimeType(),
+                $chunkSize
+            );
+
+            $filePath = $file->getFilePath();
+            $fileSize = filesize($filePath);
+            $media->setFileSize(false !== $fileSize ? $fileSize : 0);
+
+            $status = false;
+            $handle = fopen($filePath, 'rb');
+
+            if (false !== $handle) {
+                while (!$status && !feof($handle)) {
+                    $chunk = fread($handle, max(1, $chunkSize));
+
+                    if (false !== $chunk) {
+                        $status = $media->nextChunk($chunk);
+                    }
+                }
+
+                fclose($handle);
+            }
+        } finally {
+            $client->setDefer(false);
+        }
+
+        $driveFile = $status instanceof DriveFile ? $status : new DriveFile();
+
+        return new GoogleDriveFileData(
+            fileId: (string) $driveFile->getId(),
             fileName: $file->getName(),
             folderId: $folderId
         );
@@ -50,6 +107,25 @@ class GoogleDrive implements GoogleDriveContract
         $response = $this->googleServiceDrive->files->delete($fileId);
 
         return empty($response->getBody()->getContents());
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function createMediaFileUpload(
+        Google_Client $client,
+        RequestInterface $request,
+        string $mimeType,
+        int $chunkSize
+    ): MediaFileUpload {
+        return new MediaFileUpload(
+            $client,
+            $request,
+            $mimeType,
+            '',
+            true,
+            $chunkSize
+        );
     }
 
     private function buildDriveFile(GoogleDriveFile $uploadedFile, string $folderId): DriveFile

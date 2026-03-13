@@ -5,9 +5,11 @@ namespace LaravelGoogleDrive\Infra\Handlers;
 use Illuminate\Http\UploadedFile;
 use LaravelGoogleDrive\Application\Deleter;
 use LaravelGoogleDrive\Application\Getter;
+use LaravelGoogleDrive\Application\LargeUploader;
 use LaravelGoogleDrive\Application\Uploader;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use LaravelGoogleDrive\Domain\Exceptions\InvalidDataProvidedException;
 use Mockery as m;
 use Tests\LeanTestCase;
@@ -18,10 +20,18 @@ class GoogleDriveTest extends LeanTestCase
     {
         // Set
         $uploader = $this->createMock(Uploader::class);
+        /** @var Getter $getter */
         $getter = m::mock(Getter::class);
+        /** @var Deleter $deleter */
         $deleter = m::mock(Deleter::class);
-        /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter, $deleter);
+        /** @var LargeUploader $largeUploader */
+        $largeUploader = m::mock(LargeUploader::class);
+        $handler = new GoogleDrive(
+            $uploader,
+            $getter,
+            $deleter,
+            $largeUploader
+        );
 
         $uploadedFile = new UploadedFile(
             $this->getFixture('file.txt'),
@@ -59,10 +69,18 @@ class GoogleDriveTest extends LeanTestCase
     {
         // Set
         $uploader = $this->createMock(Uploader::class);
+        /** @var Getter $getter */
         $getter = m::mock(Getter::class);
+        /** @var Deleter $deleter */
         $deleter = m::mock(Deleter::class);
-        /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter, $deleter);
+        /** @var LargeUploader $largeUploader */
+        $largeUploader = m::mock(LargeUploader::class);
+        $handler = new GoogleDrive(
+            $uploader,
+            $getter,
+            $deleter,
+            $largeUploader
+        );
 
         $uploadedFile1 = new UploadedFile(
             $this->getFixture('file.txt'),
@@ -118,15 +136,22 @@ class GoogleDriveTest extends LeanTestCase
     public function testShouldThrowAnExceptionWhenTheGivenDataIsInvalid(): void
     {
         // Set
+        /** @var Uploader $uploader */
         $uploader = m::mock(Uploader::class);
+        /** @var Getter $getter */
         $getter = m::mock(Getter::class);
+        /** @var Deleter $deleter */
         $deleter = m::mock(Deleter::class);
-        /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter, $deleter);
+        /** @var LargeUploader $largeUploader */
+        $largeUploader = m::mock(LargeUploader::class);
+        $handler = new GoogleDrive(
+            $uploader,
+            $getter,
+            $deleter,
+            $largeUploader
+        );
 
-        $uploadedFiles = [
-            'invalid data',
-        ];
+        $uploadedFiles = ['invalid data'];
 
         // Expectations
         $this->expectException(InvalidDataProvidedException::class);
@@ -142,11 +167,20 @@ class GoogleDriveTest extends LeanTestCase
     public function testShouldGetTheRequestedFile(): void
     {
         // Set
+        /** @var Uploader $uploader */
         $uploader = m::mock(Uploader::class);
+        /** @var Getter $getter */
         $getter = m::mock(Getter::class);
+        /** @var Deleter $deleter */
         $deleter = m::mock(Deleter::class);
-        /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter, $deleter);
+        /** @var LargeUploader $largeUploader */
+        $largeUploader = m::mock(LargeUploader::class);
+        $handler = new GoogleDrive(
+            $uploader,
+            $getter,
+            $deleter,
+            $largeUploader
+        );
 
         $file = new GoogleDriveFile(
             name: 'file.txt',
@@ -167,14 +201,127 @@ class GoogleDriveTest extends LeanTestCase
         $this->assertInstanceOf(GoogleDriveFile::class, $result);
     }
 
+    public function testShouldUploadLargeFile(): void
+    {
+        // Set
+        /** @var Uploader $uploader */
+        $uploader = m::mock(Uploader::class);
+        /** @var Getter $getter */
+        $getter = m::mock(Getter::class);
+        /** @var Deleter $deleter */
+        $deleter = m::mock(Deleter::class);
+        $largeUploader = $this->createMock(LargeUploader::class);
+        $handler = new GoogleDrive(
+            $uploader,
+            $getter,
+            $deleter,
+            $largeUploader
+        );
+
+        $uploadedFile = new UploadedFile(
+            $this->getFixture('file.txt'),
+            'file.txt',
+            'text/plain'
+        );
+
+        $fileData = new GoogleDriveFileData(
+            fileId: '63ab4f34fecd335a6c043104',
+            fileName: 'file.txt',
+            folderId: '63ab4f34fecd335a6c043105'
+        );
+
+        $expectedFile = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: $uploadedFile->getRealPath() ?: $uploadedFile->getPathname(),
+            mimeType: 'text/plain',
+        );
+
+        // Expectations
+        $largeUploader->expects($this->once())
+            ->method('upload')
+            ->with($expectedFile, '', 1 * 1024 * 1024)
+            ->willReturn($fileData);
+
+        // Action
+        $result = $handler->uploadLarge($uploadedFile);
+
+        // Assertions
+        $this->assertInstanceOf(GoogleDriveFileData::class, $result);
+        $this->assertSame('63ab4f34fecd335a6c043104', $result->getFileId());
+        $this->assertSame('63ab4f34fecd335a6c043105', $result->getFolderId());
+        $this->assertSame('file.txt', $result->getFileName());
+    }
+
+    public function testShouldUploadLargeFileWithCustomChunkSizeAndFolderId(): void
+    {
+        // Set
+        /** @var Uploader $uploader */
+        $uploader = m::mock(Uploader::class);
+        /** @var Getter $getter */
+        $getter = m::mock(Getter::class);
+        /** @var Deleter $deleter */
+        $deleter = m::mock(Deleter::class);
+        $largeUploader = $this->createMock(LargeUploader::class);
+        $handler = new GoogleDrive(
+            $uploader,
+            $getter,
+            $deleter,
+            $largeUploader
+        );
+
+        $uploadedFile = new UploadedFile(
+            $this->getFixture('file.txt'),
+            'file.txt',
+            'text/plain'
+        );
+
+        $fileData = new GoogleDriveFileData(
+            fileId: '63ab4f34fecd335a6c043104',
+            fileName: 'file.txt',
+            folderId: '63ab4f34fecd335a6c043105'
+        );
+
+        $expectedFile = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: $uploadedFile->getRealPath() ?: $uploadedFile->getPathname(),
+            mimeType: 'text/plain',
+        );
+
+        // Expectations
+        $largeUploader->expects($this->once())
+            ->method('upload')
+            ->with($expectedFile, '63ab4f34fecd335a6c043105', 5 * 1024 * 1024)
+            ->willReturn($fileData);
+
+        // Action
+        $result = $handler->uploadLarge(
+            $uploadedFile,
+            '63ab4f34fecd335a6c043105',
+            5 * 1024 * 1024
+        );
+
+        // Assertions
+        $this->assertInstanceOf(GoogleDriveFileData::class, $result);
+        $this->assertSame('63ab4f34fecd335a6c043104', $result->getFileId());
+    }
+
     public function testShouldDeleteTheGivenFile(): void
     {
         // Set
+        /** @var Uploader $uploader */
         $uploader = m::mock(Uploader::class);
+        /** @var Getter $getter */
         $getter = m::mock(Getter::class);
+        /** @var Deleter $deleter */
         $deleter = m::mock(Deleter::class);
-        /** @phpstan-ignore-next-line  */
-        $handler = new GoogleDrive($uploader, $getter, $deleter);
+        /** @var LargeUploader $largeUploader */
+        $largeUploader = m::mock(LargeUploader::class);
+        $handler = new GoogleDrive(
+            $uploader,
+            $getter,
+            $deleter,
+            $largeUploader
+        );
 
         // Expectations
         /** @phpstan-ignore-next-line  */

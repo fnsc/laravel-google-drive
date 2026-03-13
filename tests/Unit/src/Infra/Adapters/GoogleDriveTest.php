@@ -2,13 +2,17 @@
 
 namespace LaravelGoogleDrive\Infra\Adapters;
 
+use Google\Http\MediaFileUpload;
 use Google\Service\Drive\DriveFile;
 use Google\Service\Drive\Resource\Files;
+use Google_Client;
 use Google_Service_Drive;
 use GuzzleHttp\Psr7\Response;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use Mockery as m;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Tests\LeanTestCase;
 
@@ -57,6 +61,73 @@ class GoogleDriveTest extends LeanTestCase
         $this->assertInstanceOf(GoogleDriveFileData::class, $result);
         $this->assertSame('639fe3a43289654a020e8dd9', $result->getFileId());
         $this->assertSame('639fe1f53289654a020e8dd8', $result->getFolderId());
+    }
+
+    public function testShouldUploadLargeFileResumablyToGoogleDrive(): void
+    {
+        // Set
+        $resourceFiles = $this->createMock(Files::class);
+        $googleServiceDrive = m::mock(Google_Service_Drive::class);
+        $googleClient = m::mock(Google_Client::class);
+        $driveFile = m::mock(DriveFile::class);
+        $mockRequest = m::mock(RequestInterface::class);
+        $mediaUpload = m::mock(MediaFileUpload::class);
+
+        /** @phpstan-ignore-next-line  */
+        $googleServiceDrive->files = $resourceFiles;
+
+        /** @var GoogleDrive $adapter */
+        $adapter = m::mock(GoogleDrive::class, [$googleServiceDrive])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $folderId = '639fe1f53289654a020e8dd8';
+        $chunkSize = 1 * 1024 * 1024;
+        $file = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: $this->getFixture('file.txt'),
+            mimeType: 'text/plain',
+        );
+
+        // Expectations
+        /** @phpstan-ignore-next-line  */
+        $googleServiceDrive->expects()->getClient()->andReturn($googleClient);
+        /** @phpstan-ignore-next-line  */
+        $googleClient->expects()->setDefer(true)->once();
+        /** @phpstan-ignore-next-line  */
+        $googleClient->expects()->setDefer(false)->once();
+
+        $resourceFiles->expects($this->once())
+            ->method('create')
+            ->willReturn($mockRequest);
+
+        /** @phpstan-ignore-next-line  */
+        $adapter->expects()
+            ->createMediaFileUpload(
+                $googleClient,
+                $mockRequest,
+                'text/plain',
+                $chunkSize
+            )
+            ->andReturn($mediaUpload);
+
+        /** @phpstan-ignore-next-line  */
+        $mediaUpload->expects()->setFileSize(m::type('int'))->once();
+        /** @phpstan-ignore-next-line  */
+        $mediaUpload->expects()->nextChunk(m::type('string'))->andReturn(
+            $driveFile
+        );
+        /** @phpstan-ignore-next-line  */
+        $driveFile->expects()->getId()->andReturn('639fe3a43289654a020e8dd9');
+
+        // Action
+        $result = $adapter->uploadResumable($file, $folderId, $chunkSize);
+
+        // Assertions
+        $this->assertInstanceOf(GoogleDriveFileData::class, $result);
+        $this->assertSame('639fe3a43289654a020e8dd9', $result->getFileId());
+        $this->assertSame($folderId, $result->getFolderId());
+        $this->assertSame('file.txt', $result->getFileName());
     }
 
     public function testShouldGetTheRequestedFileFromGoogleDrive(): void
