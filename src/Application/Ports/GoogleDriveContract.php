@@ -9,6 +9,14 @@ interface GoogleDriveContract
 {
     public function upload(GoogleDriveFile $file, string $folderId): GoogleDriveFileData;
 
+    public function uploadResumable(
+        string $filePath,
+        string $fileName,
+        string $mimeType,
+        string $folderId,
+        int $chunkSize
+    ): GoogleDriveFileData;
+
     public function get(string $fileName, string $fileId): GoogleDriveFile;
 
     public function delete(string $fileId): bool;
