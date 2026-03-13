@@ -8,6 +8,7 @@ use LaravelGoogleDrive\Application\LargeUploader;
 use LaravelGoogleDrive\Application\Uploader;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use LaravelGoogleDrive\Domain\Exceptions\InvalidDataProvidedException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -63,13 +64,13 @@ class GoogleDrive
         string $folderId = '',
         int $chunkSize = 1 * 1024 * 1024
     ): GoogleDriveFileData {
-        return $this->largeUploader->upload(
+        $file = new LargeGoogleDriveFile(
+            name: $uploadedFile->getClientOriginalName(),
             filePath: $uploadedFile->getRealPath() ?: $uploadedFile->getPathname(),
-            fileName: $uploadedFile->getClientOriginalName(),
             mimeType: $uploadedFile->getMimeType() ?? 'application/octet-stream',
-            folderId: $folderId,
-            chunkSize: $chunkSize
         );
+
+        return $this->largeUploader->upload($file, $folderId, $chunkSize);
     }
 
     public function delete(string $fileId): bool

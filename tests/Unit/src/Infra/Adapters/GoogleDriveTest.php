@@ -10,6 +10,7 @@ use Google_Service_Drive;
 use GuzzleHttp\Psr7\Response;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use Mockery as m;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -80,9 +81,13 @@ class GoogleDriveTest extends LeanTestCase
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
-        $filePath = $this->getFixture('file.txt');
         $folderId = '639fe1f53289654a020e8dd8';
         $chunkSize = 1 * 1024 * 1024;
+        $file = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: $this->getFixture('file.txt'),
+            mimeType: 'text/plain',
+        );
 
         // Expectations
         /** @phpstan-ignore-next-line  */
@@ -116,13 +121,7 @@ class GoogleDriveTest extends LeanTestCase
         $driveFile->expects()->getId()->andReturn('639fe3a43289654a020e8dd9');
 
         // Action
-        $result = $adapter->uploadResumable(
-            $filePath,
-            'file.txt',
-            'text/plain',
-            $folderId,
-            $chunkSize
-        );
+        $result = $adapter->uploadResumable($file, $folderId, $chunkSize);
 
         // Assertions
         $this->assertInstanceOf(GoogleDriveFileData::class, $result);

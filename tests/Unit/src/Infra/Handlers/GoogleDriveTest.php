@@ -9,6 +9,7 @@ use LaravelGoogleDrive\Application\LargeUploader;
 use LaravelGoogleDrive\Application\Uploader;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use LaravelGoogleDrive\Domain\Exceptions\InvalidDataProvidedException;
 use Mockery as m;
 use Tests\LeanTestCase;
@@ -229,16 +230,16 @@ class GoogleDriveTest extends LeanTestCase
             folderId: '63ab4f34fecd335a6c043105'
         );
 
+        $expectedFile = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: $uploadedFile->getRealPath() ?: $uploadedFile->getPathname(),
+            mimeType: 'text/plain',
+        );
+
         // Expectations
         $largeUploader->expects($this->once())
             ->method('upload')
-            ->with(
-                $uploadedFile->getRealPath() ?: $uploadedFile->getPathname(),
-                'file.txt',
-                'text/plain',
-                '',
-                1 * 1024 * 1024
-            )
+            ->with($expectedFile, '', 1 * 1024 * 1024)
             ->willReturn($fileData);
 
         // Action
@@ -280,16 +281,16 @@ class GoogleDriveTest extends LeanTestCase
             folderId: '63ab4f34fecd335a6c043105'
         );
 
+        $expectedFile = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: $uploadedFile->getRealPath() ?: $uploadedFile->getPathname(),
+            mimeType: 'text/plain',
+        );
+
         // Expectations
         $largeUploader->expects($this->once())
             ->method('upload')
-            ->with(
-                $uploadedFile->getRealPath() ?: $uploadedFile->getPathname(),
-                'file.txt',
-                'text/plain',
-                '63ab4f34fecd335a6c043105',
-                5 * 1024 * 1024
-            )
+            ->with($expectedFile, '63ab4f34fecd335a6c043105', 5 * 1024 * 1024)
             ->willReturn($fileData);
 
         // Action

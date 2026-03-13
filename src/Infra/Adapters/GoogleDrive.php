@@ -10,6 +10,7 @@ use GuzzleHttp\Psr7\Response;
 use LaravelGoogleDrive\Application\Ports\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFile;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use Psr\Http\Message\RequestInterface;
 
 class GoogleDrive implements GoogleDriveContract
@@ -34,15 +35,10 @@ class GoogleDrive implements GoogleDriveContract
         );
     }
 
-    public function uploadResumable(
-        string $filePath,
-        string $fileName,
-        string $mimeType,
-        string $folderId,
-        int $chunkSize
-    ): GoogleDriveFileData {
+    public function uploadResumable(LargeGoogleDriveFile $file, string $folderId, int $chunkSize): GoogleDriveFileData
+    {
         $googleDriveFile = new DriveFile([
-            'name' => $fileName,
+            'name' => $file->getName(),
             'parents' => [$folderId],
         ]);
 
@@ -57,10 +53,11 @@ class GoogleDrive implements GoogleDriveContract
             $media = $this->createMediaFileUpload(
                 $client,
                 $request,
-                $mimeType,
+                $file->getMimeType(),
                 $chunkSize
             );
 
+            $filePath = $file->getFilePath();
             $fileSize = filesize($filePath);
             $media->setFileSize(false !== $fileSize ? $fileSize : 0);
 
@@ -86,7 +83,7 @@ class GoogleDrive implements GoogleDriveContract
 
         return new GoogleDriveFileData(
             fileId: (string) $driveFile->getId(),
-            fileName: $fileName,
+            fileName: $file->getName(),
             folderId: $folderId
         );
     }
@@ -112,6 +109,9 @@ class GoogleDrive implements GoogleDriveContract
         return empty($response->getBody()->getContents());
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     protected function createMediaFileUpload(
         Google_Client $client,
         RequestInterface $request,

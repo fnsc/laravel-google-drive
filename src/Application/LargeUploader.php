@@ -5,6 +5,7 @@ namespace LaravelGoogleDrive\Application;
 use LaravelGoogleDrive\Application\Ports\ConfigContract;
 use LaravelGoogleDrive\Application\Ports\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use LaravelGoogleDrive\Domain\Exceptions\FolderIdException;
 
 class LargeUploader
@@ -15,19 +16,12 @@ class LargeUploader
     ) {
     }
 
-    public function upload(
-        string $filePath,
-        string $fileName,
-        string $mimeType,
-        string $folderId,
-        int $chunkSize
-    ): GoogleDriveFileData {
+    public function upload(LargeGoogleDriveFile $file, string $folderId, int $chunkSize): GoogleDriveFileData
+    {
         $folderId = $this->getFolderId($folderId);
 
         return $this->googleDrive->uploadResumable(
-            $filePath,
-            $fileName,
-            $mimeType,
+            $file,
             $folderId,
             $chunkSize
         );

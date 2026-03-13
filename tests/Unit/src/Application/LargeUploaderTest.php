@@ -5,6 +5,7 @@ namespace LaravelGoogleDrive\Application;
 use LaravelGoogleDrive\Application\Ports\ConfigContract;
 use LaravelGoogleDrive\Application\Ports\GoogleDriveContract;
 use LaravelGoogleDrive\Domain\Entities\GoogleDriveFileData;
+use LaravelGoogleDrive\Domain\Entities\LargeGoogleDriveFile;
 use LaravelGoogleDrive\Domain\Exceptions\FolderIdException;
 use Mockery as m;
 use Tests\LeanTestCase;
@@ -19,6 +20,12 @@ class LargeUploaderTest extends LeanTestCase
         /** @phpstan-ignore-next-line  */
         $largeUploader = new LargeUploader($googleDrive, $config);
 
+        $file = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: '/tmp/file.txt',
+            mimeType: 'text/plain',
+        );
+
         $fileData = new GoogleDriveFileData(
             fileId: '639fa51de807c624220da745',
             fileName: 'file.txt',
@@ -28,22 +35,14 @@ class LargeUploaderTest extends LeanTestCase
         // Expectations
         /** @phpstan-ignore-next-line  */
         $googleDrive->expects()
-            ->uploadResumable(
-                '/tmp/file.txt',
-                'file.txt',
-                'text/plain',
-                '639fa51de807c624220da746',
-                1048576
-            )
+            ->uploadResumable($file, '639fa51de807c624220da746', 1048576)
             ->andReturn($fileData);
 
         // Action
         $result = $largeUploader->upload(
-            filePath: '/tmp/file.txt',
-            fileName: 'file.txt',
-            mimeType: 'text/plain',
-            folderId: '639fa51de807c624220da746',
-            chunkSize: 1048576
+            $file,
+            '639fa51de807c624220da746',
+            1048576
         );
 
         // Assertions
@@ -60,6 +59,12 @@ class LargeUploaderTest extends LeanTestCase
         /** @phpstan-ignore-next-line  */
         $largeUploader = new LargeUploader($googleDrive, $config);
 
+        $file = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: '/tmp/file.txt',
+            mimeType: 'text/plain',
+        );
+
         $fileData = new GoogleDriveFileData(
             fileId: '639fa51de807c624220da745',
             fileName: 'file.txt',
@@ -74,23 +79,11 @@ class LargeUploaderTest extends LeanTestCase
 
         /** @phpstan-ignore-next-line  */
         $googleDrive->expects()
-            ->uploadResumable(
-                '/tmp/file.txt',
-                'file.txt',
-                'text/plain',
-                '639fa51de807c624220da746',
-                1048576
-            )
+            ->uploadResumable($file, '639fa51de807c624220da746', 1048576)
             ->andReturn($fileData);
 
         // Action
-        $result = $largeUploader->upload(
-            filePath: '/tmp/file.txt',
-            fileName: 'file.txt',
-            mimeType: 'text/plain',
-            folderId: '',
-            chunkSize: 1048576
-        );
+        $result = $largeUploader->upload($file, '', 1048576);
 
         // Assertions
         $this->assertInstanceOf(GoogleDriveFileData::class, $result);
@@ -105,6 +98,12 @@ class LargeUploaderTest extends LeanTestCase
         /** @phpstan-ignore-next-line  */
         $largeUploader = new LargeUploader($googleDrive, $config);
 
+        $file = new LargeGoogleDriveFile(
+            name: 'file.txt',
+            filePath: '/tmp/file.txt',
+            mimeType: 'text/plain',
+        );
+
         // Expectations
         /** @phpstan-ignore-next-line  */
         $config->expects()
@@ -117,12 +116,6 @@ class LargeUploaderTest extends LeanTestCase
         );
 
         // Action
-        $largeUploader->upload(
-            '/tmp/file.txt',
-            'file.txt',
-            'text/plain',
-            '',
-            1048576
-        );
+        $largeUploader->upload($file, '', 1048576);
     }
 }
